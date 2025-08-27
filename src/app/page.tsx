@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import {
   SidebarProvider,
   Sidebar,
@@ -8,27 +8,29 @@ import {
   SidebarContent,
   SidebarInset,
   SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { QuakeMap } from '@/components/quake-map';
-import { MagnitudeLegend } from '@/components/magnitude-legend';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
+} from "@/components/ui/sidebar";
+import { QuakeMap } from "@/components/quake-map";
+import { MagnitudeLegend } from "@/components/magnitude-legend";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { TimePeriod } from '@/hooks/use-earthquakes';
-import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
-import { PanelLeft } from 'lucide-react';
+} from "@/components/ui/select";
+import type { TimePeriod } from "@/hooks/use-earthquakes";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { PanelLeft } from "lucide-react";
 
 export default function Home() {
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('day');
-  const [magnitudeRange, setMagnitudeRange] = useState<[number, number]>([0, 10]);
-  const [mapTypeId, setMapTypeId] = useState<string>('roadmap');
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("day");
+  const [magnitudeRange, setMagnitudeRange] = useState<[number, number]>([
+    0, 10,
+  ]);
+  const [mapTypeId, setMapTypeId] = useState<string>("roadmap");
 
   return (
     <SidebarProvider>
@@ -41,7 +43,9 @@ export default function Home() {
         <SidebarContent className="flex flex-col gap-6 p-4">
           <div className="space-y-4">
             <div>
-              <Label htmlFor="time-period" className="text-base">Time Period</Label>
+              <Label htmlFor="time-period" className="text-base">
+                Time Period
+              </Label>
               <Select
                 value={timePeriod}
                 onValueChange={(v) => setTimePeriod(v as TimePeriod)}
@@ -60,11 +64,14 @@ export default function Home() {
 
             <div className="space-y-2">
               <Label className="text-base">
-                Magnitude: {magnitudeRange[0].toFixed(1)} - {magnitudeRange[1].toFixed(1)}
+                Magnitude: {magnitudeRange[0].toFixed(1)} -{" "}
+                {magnitudeRange[1].toFixed(1)}
               </Label>
               <Slider
                 value={magnitudeRange}
-                onValueChange={(value) => setMagnitudeRange(value as [number, number])}
+                onValueChange={(value) =>
+                  setMagnitudeRange(value as [number, number])
+                }
                 min={0}
                 max={10}
                 step={0.1}
@@ -73,7 +80,9 @@ export default function Home() {
             </div>
 
             <div>
-              <Label htmlFor="map-style" className="text-base">Map Style</Label>
+              <Label htmlFor="map-style" className="text-base">
+                Map Style
+              </Label>
               <Select value={mapTypeId} onValueChange={setMapTypeId}>
                 <SelectTrigger id="map-style" className="mt-2">
                   <SelectValue placeholder="Select map style" />
@@ -97,7 +106,7 @@ export default function Home() {
         <div className="absolute top-4 left-4 z-10">
           <SidebarTrigger>
             <Button size="icon" variant="default" className="shadow-lg">
-                <PanelLeft />
+              <PanelLeft />
             </Button>
           </SidebarTrigger>
         </div>

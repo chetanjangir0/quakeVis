@@ -88,10 +88,10 @@ export function QuakeMap({
           </div>
         </div>
       )}
-      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+      <APIProvider apiKey={GOOGLE_MAPS_API_KEY} >
         <Map
           defaultCenter={{ lat: 20, lng: 0 }}
-          defaultZoom={2}
+          defaultZoom={3}
           mapId="quakevis_map"
           className="h-full w-full border-none"
           gestureHandling={'greedy'}
