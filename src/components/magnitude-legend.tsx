@@ -1,5 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { magnitudeLevels } from '@/lib/earthquake-helpers';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { magnitudeLevels } from "@/lib/earthquake-helpers";
 
 export function MagnitudeLegend() {
   return (
@@ -18,11 +24,22 @@ export function MagnitudeLegend() {
               />
               <div>
                 <span className="font-semibold">{level.range}</span>
-                <p className="text-sm text-muted-foreground">{level.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {level.description}
+                </p>
               </div>
             </li>
           ))}
         </ul>
+
+        {/* Clustering info */}
+        <div className="mt-4 border-t pt-3 text-sm text-muted-foreground">
+          <p>
+            <span className="font-semibold">Clusters</span> group nearby
+            earthquakes into a single marker with a number showing how many are
+            in that area.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

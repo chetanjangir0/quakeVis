@@ -3,7 +3,6 @@
 import {
   APIProvider,
   Map,
-  AdvancedMarker,
   InfoWindow,
   useMap,
 } from "@vis.gl/react-google-maps";
@@ -216,8 +215,40 @@ function ClusteredMarkers({
       clusterer.addMarkers(visibleClusteredMarkers);
     };
 
-    const clusterer = new MarkerClusterer({ map });
 
+const clusterer = new MarkerClusterer({
+  map,
+  renderer: {
+    render: ({ count, position }) => {
+      // neutral gray scale
+      let color = "#6b7280"; // gray-500
+      if (count > 50) color = "#111827"; // almost black
+      else if (count > 20) color = "#374151"; // dark gray
+      else if (count > 5) color = "#9ca3af"; // light gray
+
+      // scale circle size with count
+      const size = Math.min(60, 20 + Math.log(count) * 10);
+
+      return new google.maps.Marker({
+        position,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: color,
+          fillOpacity: 0.6,
+          strokeColor: "#fff",
+          strokeWeight: 2,
+          scale: size / 3,
+        },
+        label: {
+          text: String(count),
+          color: "#fff",
+          fontSize: "12px",
+          fontWeight: "bold",
+        },
+      });
+    },
+  },
+});
     // initial render
     updateMarkers();
 
@@ -229,4 +260,5 @@ function ClusteredMarkers({
       clusterer.clearMarkers();
     };
   }, [map, earthquakes, onSelect]);
+  return null;
 }
