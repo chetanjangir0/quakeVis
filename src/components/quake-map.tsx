@@ -9,6 +9,7 @@ import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
 import { getMagnitudeColor } from '@/lib/earthquake-helpers';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
 
 const getMagnitudeStyle = (magnitude: number) => {
   const color = getMagnitudeColor(magnitude);
@@ -98,28 +99,7 @@ export function QuakeMap({
           disableDefaultUI={true}
           mapTypeId={mapTypeId}
         >
-          {earthquakes.map((quake) => {
-            const { color, size } = getMagnitudeStyle(quake.properties.mag);
-            return (
-              <AdvancedMarker
-                key={quake.id}
-                position={{ lat: quake.geometry.coordinates[1], lng: quake.geometry.coordinates[0] }}
-                onClick={() => setSelectedQuake(quake)}
-              >
-                <div
-                  className="cursor-pointer rounded-full border-2 transition-transform duration-200 ease-out hover:scale-125"
-                  style={{
-                    width: `${size}px`,
-                    height: `${size}px`,
-                    backgroundColor: `${color}B3`,
-                    borderColor: color,
-                  }}
-                  title={`Mag ${quake.properties.mag}: ${quake.properties.place}`}
-                />
-              </AdvancedMarker>
-            );
-          })}
-
+          <ClusteredMarkers earthquakes={earthquakes} onSelect={setSelectedQuake} />
           {selectedQuake && (
             <InfoWindow
               position={{
@@ -150,4 +130,47 @@ export function QuakeMap({
       </APIProvider>
     </div>
   );
+}
+
+function ClusteredMarkers({
+  earthquakes,
+  onSelect,
+}: {
+  earthquakes: EarthquakeFeature[];
+  onSelect: (quake: EarthquakeFeature) => void;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    const markers = earthquakes.map((quake) => {
+      const { color, size } = getMagnitudeStyle(quake.properties.mag);
+
+      const marker = new google.maps.Marker({
+        position: {
+          lat: quake.geometry.coordinates[1],
+          lng: quake.geometry.coordinates[0],
+        },
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: color,
+          fillOpacity: 0.7,
+          strokeColor: color,
+          strokeWeight: 2,
+          scale: size / 3,
+        },
+        title: `Mag ${quake.properties.mag} - ${quake.properties.place}`,
+      });
+
+      marker.addListener("click", () => onSelect(quake));
+      return marker;
+    });
+
+    const clusterer = new MarkerClusterer({ map, markers });
+
+    return () => clusterer.clearMarkers();
+  }, [map, earthquakes, onSelect]);
+
+  return null;
 }
