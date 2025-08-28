@@ -1,14 +1,20 @@
 "use client";
 
-import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from '@vis.gl/react-google-maps';
-import { GOOGLE_MAPS_API_KEY } from '@/lib/config';
-import { useEarthquakes, type TimePeriod } from '@/hooks/use-earthquakes';
-import { useState, useEffect } from 'react';
-import type { EarthquakeFeature } from '@/types/earthquake';
-import { Skeleton } from './ui/skeleton';
-import { Button } from './ui/button';
-import { getMagnitudeColor } from '@/lib/earthquake-helpers';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  InfoWindow,
+  useMap,
+} from "@vis.gl/react-google-maps";
+import { GOOGLE_MAPS_API_KEY } from "@/lib/config";
+import { useEarthquakes, type TimePeriod } from "@/hooks/use-earthquakes";
+import { useState, useEffect } from "react";
+import type { EarthquakeFeature } from "@/types/earthquake";
+import { Skeleton } from "./ui/skeleton";
+import { Button } from "./ui/button";
+import { getMagnitudeColor } from "@/lib/earthquake-helpers";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 
 const getMagnitudeStyle = (magnitude: number) => {
@@ -22,7 +28,7 @@ const MapUpdater = ({ earthquakes }: { earthquakes: EarthquakeFeature[] }) => {
   useEffect(() => {
     if (map && earthquakes.length > 0) {
       const bounds = new window.google.maps.LatLngBounds();
-      earthquakes.forEach(quake => {
+      earthquakes.forEach((quake) => {
         bounds.extend({
           lat: quake.geometry.coordinates[1],
           lng: quake.geometry.coordinates[0],
@@ -32,7 +38,7 @@ const MapUpdater = ({ earthquakes }: { earthquakes: EarthquakeFeature[] }) => {
     }
   }, [map, earthquakes]);
   return null;
-}
+};
 
 export function QuakeMap({
   timePeriod,
@@ -43,8 +49,13 @@ export function QuakeMap({
   magnitudeRange: [number, number];
   mapTypeId: string;
 }) {
-  const { earthquakes, isLoading, error } = useEarthquakes(timePeriod, magnitudeRange);
-  const [selectedQuake, setSelectedQuake] = useState<EarthquakeFeature | null>(null);
+  const { earthquakes, isLoading, error } = useEarthquakes(
+    timePeriod,
+    magnitudeRange,
+  );
+  const [selectedQuake, setSelectedQuake] = useState<EarthquakeFeature | null>(
+    null,
+  );
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
@@ -59,7 +70,8 @@ export function QuakeMap({
         <AlertTriangle className="h-12 w-12 text-destructive" />
         <h2 className="mt-4 text-2xl font-bold">API Key Missing</h2>
         <p className="mt-2 text-muted-foreground">
-          Please provide a Google Maps API key in your environment variables to display the map.
+          Please provide a Google Maps API key in your environment variables to
+          display the map.
         </p>
       </div>
     );
@@ -89,17 +101,20 @@ export function QuakeMap({
           </div>
         </div>
       )}
-      <APIProvider apiKey={GOOGLE_MAPS_API_KEY} >
+      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
         <Map
           defaultCenter={{ lat: 20, lng: 0 }}
           defaultZoom={3}
           mapId="quakevis_map"
           className="h-full w-full border-none"
-          gestureHandling={'greedy'}
+          gestureHandling={"greedy"}
           disableDefaultUI={true}
           mapTypeId={mapTypeId}
         >
-          <ClusteredMarkers earthquakes={earthquakes} onSelect={setSelectedQuake} />
+          <ClusteredMarkers
+            earthquakes={earthquakes}
+            onSelect={setSelectedQuake}
+          />
           {selectedQuake && (
             <InfoWindow
               position={{
@@ -107,18 +122,28 @@ export function QuakeMap({
                 lng: selectedQuake.geometry.coordinates[0],
               }}
               onCloseClick={() => setSelectedQuake(null)}
-              pixelOffset={[0, -getMagnitudeStyle(selectedQuake.properties.mag).size / 2]}
+              pixelOffset={[
+                0,
+                -getMagnitudeStyle(selectedQuake.properties.mag).size / 2,
+              ]}
             >
               <div className="p-2 min-w-48">
-                <h3 className="font-bold font-headline text-lg">{selectedQuake.properties.title}</h3>
+                <h3 className="font-bold font-headline text-lg">
+                  {selectedQuake.properties.title}
+                </h3>
                 <p className="text-base mt-1">
-                  <strong>Magnitude:</strong> {selectedQuake.properties.mag.toFixed(1)}
+                  <strong>Magnitude:</strong>{" "}
+                  {selectedQuake.properties.mag.toFixed(1)}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {new Date(selectedQuake.properties.time).toLocaleString()}
                 </p>
                 <Button variant="link" asChild className="p-0 h-auto mt-2">
-                  <a href={selectedQuake.properties.url} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={selectedQuake.properties.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     More details on USGS
                   </a>
                 </Button>
@@ -144,33 +169,64 @@ function ClusteredMarkers({
   useEffect(() => {
     if (!map) return;
 
-    const markers = earthquakes.map((quake) => {
-      const { color, size } = getMagnitudeStyle(quake.properties.mag);
+    const updateMarkers = () => {
+      const bounds = map.getBounds();
+      if (!bounds) return;
 
-      const marker = new google.maps.Marker({
-        position: {
-          lat: quake.geometry.coordinates[1],
-          lng: quake.geometry.coordinates[0],
-        },
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: color,
-          fillOpacity: 0.7,
-          strokeColor: color,
-          strokeWeight: 2,
-          scale: size / 3,
-        },
-        title: `Mag ${quake.properties.mag} - ${quake.properties.place}`,
+      const visibleQuakes = earthquakes.filter((quake) =>
+        bounds.contains(
+          new google.maps.LatLng(
+            quake.geometry.coordinates[1],
+            quake.geometry.coordinates[0],
+          ),
+        ),
+      );
+
+      console.log(
+        "Total:",
+        earthquakes.length,
+        "Visible:",
+        visibleQuakes.length,
+      );
+
+      const visibleClusteredMarkers = visibleQuakes.map((quake) => {
+        const { color, size } = getMagnitudeStyle(quake.properties.mag);
+
+        const marker = new google.maps.Marker({
+          position: {
+            lat: quake.geometry.coordinates[1],
+            lng: quake.geometry.coordinates[0],
+          },
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: color,
+            fillOpacity: 0.7,
+            strokeColor: color,
+            strokeWeight: 2,
+            scale: size / 3,
+          },
+          title: `Mag ${quake.properties.mag} - ${quake.properties.place}`,
+        });
+
+        marker.addListener("click", () => onSelect(quake));
+        return marker;
       });
 
-      marker.addListener("click", () => onSelect(quake));
-      return marker;
-    });
+      clusterer.clearMarkers();
+      clusterer.addMarkers(visibleClusteredMarkers);
+    };
 
-    const clusterer = new MarkerClusterer({ map, markers });
+    const clusterer = new MarkerClusterer({ map });
 
-    return () => clusterer.clearMarkers();
+    // initial render
+    updateMarkers();
+
+    // re-run on viewport changes
+    map.addListener("idle", updateMarkers);
+
+    return () => {
+      google.maps.event.clearListeners(map, "idle");
+      clusterer.clearMarkers();
+    };
   }, [map, earthquakes, onSelect]);
-
-  return null;
 }
